@@ -6,7 +6,7 @@ import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, ge
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 
 const HomeScreen = () => {
-  const [userImages, setUserImages] = useState<string[]>([]); // Store image URLs
+  const [userImages, setUserImages] = useState<string[]>([]); 
   const user = FIREBASE_AUTH.currentUser;
   const db = getFirestore();
   
