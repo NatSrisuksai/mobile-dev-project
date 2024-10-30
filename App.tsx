@@ -1,20 +1,36 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import LoginPage from './components/login/loginPage';
+import RegisterPage from './components/register/registerPage';
+import HomeScreen from './components/homescreen/HomeScreen';
+import FeedPage from './components/feedpage/FeedPage';
+import SearchPage from './components/searchpage/SearchPage';
+import CameraScreen from './components/cameraScreen/CameraScreen';
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
 
-export default function App() {
+const TabNavigator = () => (
+  <Tab.Navigator initialRouteName="Home">
+    <Tab.Screen name="Home" component={HomeScreen} />
+    <Tab.Screen name="Feed" component={FeedPage} />
+    <Tab.Screen name="Search" component={SearchPage} />
+    <Tab.Screen name="Camera" component={CameraScreen} />
+  </Tab.Navigator>
+);
+
+const App = () => {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={LoginPage} />
+        <Stack.Screen name="Register" component={RegisterPage} />
+        {/* Redirect to the Tab Navigator after login */}
+        <Stack.Screen name="Main" component={TabNavigator} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
