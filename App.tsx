@@ -8,6 +8,7 @@ import HomeScreen from './components/homescreen/HomeScreen';
 import FeedPage from './components/feedpage/FeedPage';
 import SearchPage from './components/searchpage/SearchPage';
 import CameraScreen from './components/cameraScreen/CameraScreen';
+
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
