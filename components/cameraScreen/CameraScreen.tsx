@@ -3,27 +3,16 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { Button, Text, TouchableOpacity, View, Image, Alert } from 'react-native';
 import tw from 'twrnc';
 import { getAuth } from 'firebase/auth';
-import { ref, uploadBytes } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FIREBASE_STORAGE } from '../../FirebaseConfig';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { getDownloadURL } from 'firebase/storage';
-import { getFirestore } from 'firebase/firestore';
+import { getDatabase, ref as databaseRef, push } from 'firebase/database';
 
-export default function CameraScreen() {
+
+const CameraScreen = () => {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const cameraRef = useRef<CameraView | null>(null);
-
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={tw`flex-1 justify-center items-center`}>
-        <Text style={tw`text-center pb-4`}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="Grant Permission" />
-      </View>
-    );
-  }
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -35,8 +24,6 @@ export default function CameraScreen() {
       }
     }
   };
-
-  const resetCamera = () => setPhotoUri(null);
 
   const uploadPhoto = async () => {
     if (!photoUri) return;
@@ -50,20 +37,17 @@ export default function CameraScreen() {
         const response = await fetch(photoUri);
         const blob = await response.blob();
 
-        // Upload to Storage
         await uploadBytes(storageRef, blob);
 
-        // Get the download URL
         const downloadURL = await getDownloadURL(storageRef);
 
-        // Save the download URL to Firestore
-        const db = getFirestore();
-        await addDoc(collection(db, 'users', user.uid, 'images'), {
-          url: downloadURL,
-          timestamp: serverTimestamp()
-        });
+        const db = getDatabase();
+        const imageRef = databaseRef(db, `users/${user.uid}/photos`);
+        await push(imageRef, { url: downloadURL, timestamp: Date.now() });
 
         Alert.alert("Success", "Photo uploaded successfully!");
+
+        // Trigger onUpload to refresh images in HomeScreen
       } else {
         Alert.alert("Error", "No user logged in. Please log in to upload photos.");
       }
@@ -72,6 +56,10 @@ export default function CameraScreen() {
       Alert.alert("Upload Failed", "An error occurred while uploading the photo.");
     }
   };
+
+
+
+  const resetCamera = () => setPhotoUri(null);
 
   return (
     <View style={tw`flex-1 justify-center`}>
@@ -108,3 +96,5 @@ export default function CameraScreen() {
     </View>
   );
 }
+
+export default CameraScreen;
