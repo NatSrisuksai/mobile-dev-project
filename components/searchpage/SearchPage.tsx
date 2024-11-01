@@ -1,24 +1,99 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
 import tw from 'twrnc';
+import { getDatabase, ref as databaseRef, onValue, set } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 
-const users = [
-  { id: '1', handle: 'john_doe', followed: false },
-  { id: '2', handle: 'jane_smith', followed: true },
-];
+interface User {
+  id: string;
+  handle: string;
+  followed: boolean;
+}
 
 const SearchPage = () => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState(users);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [results, setResults] = useState<User[]>([]);
+  const [followedUsers, setFollowedUsers] = useState<Record<string, boolean>>({});
+  const auth = getAuth();
+  const db = getDatabase();
+  const currentUser = auth.currentUser;
 
-  const handleSearch = () => {
-    setResults(users.filter((user) => user.handle.includes(query)));
-  };
+  useEffect(() => {
+    if (currentUser) {
+      // Fetch list of all users
+      const usersRef = databaseRef(db, 'users');
+      onValue(usersRef, (snapshot) => {
+        const usersData = snapshot.val() || {};
+        const usersList = Object.keys(usersData)
+          .filter((userId) => userId !== currentUser.uid) // Exclude the current user
+          .map((userId) => ({
+            id: userId,
+            handle: usersData[userId].username,
+            followed: false, // Default followed state
+          }));
+        setAllUsers(usersList);
+      });
 
-  const toggleFollow = (id: string) => {
-    setResults((prev) =>
-      prev.map((user) => (user.id === id ? { ...user, followed: !user.followed } : user))
-    );
+      // Fetch the current user's followed users
+      const followsRef = databaseRef(db, `users/${currentUser.uid}/follows`);
+      onValue(followsRef, (snapshot) => {
+        const followsData = snapshot.val() || {};
+        setFollowedUsers(followsData);
+      });
+    }
+  }, [currentUser, db]);
+
+
+  useEffect(() => {
+    // Update results based on follow status and search query
+    if (query.trim() === '') {
+      // Show only followed users by default if no query
+      setResults(
+        allUsers
+          .filter((user) => followedUsers[user.id])
+          .map((user) => ({
+            ...user,
+            followed: true,
+          }))
+      );
+    } else {
+      // Show both followed and unfollowed users matching the search query
+      setResults(
+        allUsers
+          .filter((user) => user.handle.toLowerCase().includes(query.toLowerCase()))
+          .map((user) => ({
+            ...user,
+            followed: !!followedUsers[user.id],
+          }))
+      );
+    }
+  }, [query, allUsers, followedUsers]);
+
+  const toggleFollow = async (userId: string) => {
+    if (!currentUser) return;
+
+    const followsRef = databaseRef(db, `users/${currentUser.uid}/follows/${userId}`);
+    const isCurrentlyFollowing = followedUsers[userId];
+
+    try {
+      if (isCurrentlyFollowing) {
+        // Unfollow user
+        await set(followsRef, null);
+      } else {
+        // Follow user
+        await set(followsRef, true);
+      }
+
+      // Update local follow state
+      setFollowedUsers((prev) => ({
+        ...prev,
+        [userId]: !isCurrentlyFollowing,
+      }));
+    } catch (error) {
+      console.error("Error updating follow status:", error);
+      Alert.alert("Error", "Could not update follow status. Please try again.");
+    }
   };
 
   return (
@@ -27,8 +102,9 @@ const SearchPage = () => {
         placeholder="Search by handle name"
         style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
         onChangeText={setQuery}
+        value={query}
       />
-      <TouchableOpacity onPress={handleSearch} style={tw`mb-4 p-3 bg-blue-500 rounded-lg`}>
+      <TouchableOpacity onPress={() => setQuery(query)} style={tw`mb-4 p-3 bg-blue-500 rounded-lg`}>
         <Text style={tw`text-white text-center`}>Search</Text>
       </TouchableOpacity>
 
