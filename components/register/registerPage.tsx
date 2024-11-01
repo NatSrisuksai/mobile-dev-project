@@ -3,16 +3,33 @@ import { View, Text, TextInput, Button, TouchableOpacity, TouchableWithoutFeedba
 import tw from 'twrnc';
 import { useNavigation } from '@react-navigation/native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_AUTH , FIREBASE_DB  } from '../../FirebaseConfig';
+import { ref, set, get } from 'firebase/database';
 
 const RegisterPage = () => {
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
 
     const handleRegister = async () => {
         try {
-            await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+            // Check if username is already taken
+            const usernameRef = ref(FIREBASE_DB, `usernames/${username}`);
+            const usernameSnapshot = await get(usernameRef);
+            if (usernameSnapshot.exists()) {
+                Alert.alert('Registration Error', 'Username already exists.');
+                return;
+            }
+    
+            // Register the user with email and password
+            const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+            const uid = userCredential.user.uid;
+    
+            // Save user data in both 'users' and 'usernames' nodes
+            await set(ref(FIREBASE_DB, `users/${uid}`), { username, email });
+            await set(usernameRef, uid);
+    
             Alert.alert('Registration Successful', 'You can now log in.');
             navigation.navigate('Login');
         } catch (error) {
@@ -29,6 +46,12 @@ const RegisterPage = () => {
                     resizeMode="contain"
                 />
                 <Text style={tw`text-2xl font-bold mb-6`}>Register</Text>
+                <TextInput
+                    style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
+                    placeholder="Username"
+                    onChangeText={setUsername}
+                    value={username}
+                />
                 <TextInput
                     style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
                     placeholder="Email"

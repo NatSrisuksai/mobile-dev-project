@@ -1,21 +1,46 @@
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Image, Alert } from 'react-native';
 import tw from 'twrnc';
 import { useNavigation } from '@react-navigation/native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../FirebaseConfig';
+import { ref, get } from 'firebase/database';
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
 
     const handleLogin = async () => {
         try {
-            await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
-            navigation.replace('Main');
+            // Check if the username exists and retrieve the associated email
+            const usernameRef = ref(FIREBASE_DB, `usernames/${username}`);
+            const usernameSnapshot = await get(usernameRef);
+
+            if (!usernameSnapshot.exists()) {
+                Alert.alert('Login Error', 'Username does not exist.');
+                return;
+            }
+
+            // Get the UID associated with the username
+            const uid = usernameSnapshot.val();
+            
+            // Use UID to fetch the user data (including email)
+            const userRef = ref(FIREBASE_DB, `users/${uid}`);
+            const userSnapshot = await get(userRef);
+
+            if (userSnapshot.exists()) {
+                const email = userSnapshot.val().email;
+
+                // Sign in with the retrieved email and entered password
+                await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+                navigation.replace('Main');
+            } else {
+                Alert.alert('Login Error', 'User data not found.');
+            }
         } catch (error) {
-            Alert.alert('L  ogin Error', error.message);
+            Alert.alert('Login Error', error.message);
         }
     };
 
@@ -30,9 +55,9 @@ const LoginPage = () => {
                 <Text style={tw`text-2xl font-bold mb-6`}>Login</Text>
                 <TextInput
                     style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
-                    placeholder="Email"
-                    onChangeText={setEmail}
-                    value={email}
+                    placeholder="Username"
+                    onChangeText={setUsername}
+                    value={username}
                 />
                 <TextInput
                     style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
