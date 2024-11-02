@@ -1,16 +1,14 @@
 import React, { useState, useRef } from 'react';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { Button, Text, TouchableOpacity, View, Image, Alert } from 'react-native';
-import tw from 'twrnc';
+import { CameraView, CameraType } from 'expo-camera';
+import { Text, TouchableOpacity, View, Image, Alert } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FIREBASE_STORAGE } from '../../FirebaseConfig';
 import { getDatabase, ref as databaseRef, push } from 'firebase/database';
-
+import tw from 'twrnc';
 
 const CameraScreen = () => {
   const [facing, setFacing] = useState<CameraType>('back');
-  const [permission, requestPermission] = useCameraPermissions();
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const cameraRef = useRef<CameraView | null>(null);
 
@@ -47,7 +45,7 @@ const CameraScreen = () => {
 
         Alert.alert("Success", "Photo uploaded successfully!");
 
-        // Trigger onUpload to refresh images in HomeScreen
+        resetCamera();
       } else {
         Alert.alert("Error", "No user logged in. Please log in to upload photos.");
       }
@@ -56,8 +54,6 @@ const CameraScreen = () => {
       Alert.alert("Upload Failed", "An error occurred while uploading the photo.");
     }
   };
-
-
 
   const resetCamera = () => setPhotoUri(null);
 
