@@ -12,6 +12,7 @@ import CameraScreen from './components/cameraScreen/CameraScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+
 const TabNavigator = () => (
   <Tab.Navigator initialRouteName="Home">
     <Tab.Screen name="Home" component={HomeScreen} />
