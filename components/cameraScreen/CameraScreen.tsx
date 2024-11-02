@@ -83,7 +83,7 @@ const CameraScreen = () => {
               <TouchableOpacity
                 style={tw`flex-1 items-center justify-center bg-green-500 mx-2 rounded`}
                 onPress={takePicture}>
-                <Text style={tw`text-xl font-bold text-white`}>Take Picture</Text>
+                <Text style={tw`text-xl font-bold text-white`}>Take Pictures</Text>
               </TouchableOpacity>
             </View>
           </CameraView>
