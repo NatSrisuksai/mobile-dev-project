@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
-import tw from 'twrnc';
 import { getDatabase, ref as databaseRef, onValue, set } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
+import { useFocusEffect } from '@react-navigation/native';
+import tw from 'twrnc';
 
 interface User {
   id: string;
@@ -43,7 +44,6 @@ const SearchPage = () => {
       });
     }
   }, [currentUser, db]);
-
 
   useEffect(() => {
     // Update results based on follow status and search query
@@ -95,6 +95,13 @@ const SearchPage = () => {
       Alert.alert("Error", "Could not update follow status. Please try again.");
     }
   };
+
+  
+  useFocusEffect(
+    useCallback(() => {
+      return () => setQuery('');
+    }, [])
+  );
 
   return (
     <View style={tw`flex-1 bg-gray-100 p-4`}>
