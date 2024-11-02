@@ -1,13 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, FlatList } from 'react-native';
-import tw from 'twrnc';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { onValue, ref as databaseRef, getDatabase } from 'firebase/database';
+import tw from 'twrnc';
 
 const HomeScreen = () => {
   const [userImages, setUserImages] = useState<string[]>([]);
   const user = FIREBASE_AUTH.currentUser;
-
 
   useEffect(() => {
     if (user) {
