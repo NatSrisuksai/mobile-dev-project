@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Image, Alert } from 'react-native';
-import tw from 'twrnc';
 import { useNavigation } from '@react-navigation/native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { FIREBASE_AUTH , FIREBASE_DB  } from '../../FirebaseConfig';
 import { ref, set, get } from 'firebase/database';
+import tw from 'twrnc';
 
 const RegisterPage = () => {
     const [username, setUsername] = useState('');
