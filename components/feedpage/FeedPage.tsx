@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image, FlatList } from 'react-native';
+import { View, Text, Image, FlatList, SafeAreaView } from 'react-native';
 import { getDatabase, ref as databaseRef, onValue, off } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
@@ -55,24 +55,26 @@ const FeedPage = () => {
     }, [currentUser, db])
   );
 
-  
+
   return (
-    <View style={tw`flex-1 bg-gray-100 p-4`}>
-      {followedUsersData.length > 0 ? (
-        <FlatList
-          data={followedUsersData}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={tw`bg-white mb-4 p-4 rounded-lg shadow`}>
-              <Text style={tw`text-lg font-semibold`}>{item.handle}</Text>
-              <Image source={{ uri: item.lastImage }} style={tw`w-full h-64 rounded-lg`} />
-            </View>
-          )}
-        />
-      ) : (
-        <Text style={tw`text-center text-gray-500`}>No followed users with photos to display.</Text>
-      )}
-    </View>
+    <SafeAreaView style={tw`flex-1 bg-gray-100`}>
+      <View style={tw`flex-1  p-4`}>
+        {followedUsersData.length > 0 ? (
+          <FlatList
+            data={followedUsersData}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={tw`bg-white mb-4 p-4 rounded-lg shadow`}>
+                <Text style={tw`text-lg font-semibold`}>{item.handle}</Text>
+                <Image source={{ uri: item.lastImage }} style={tw`w-full h-120 rounded-lg`} />
+              </View>
+            )}
+          />
+        ) : (
+          <Text style={tw`text-center text-gray-500`}>No followed users with photos to display.</Text>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 

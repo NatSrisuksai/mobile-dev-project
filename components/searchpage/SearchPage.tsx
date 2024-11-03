@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, SafeAreaView } from 'react-native';
 import { getDatabase, ref as databaseRef, onValue, set } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
@@ -96,7 +96,6 @@ const SearchPage = () => {
     }
   };
 
-  
   useFocusEffect(
     useCallback(() => {
       return () => setQuery('');
@@ -104,33 +103,31 @@ const SearchPage = () => {
   );
 
   return (
-    <View style={tw`flex-1 bg-gray-100 p-4`}>
-      <TextInput
-        placeholder="Search by handle name"
-        style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
-        onChangeText={setQuery}
-        value={query}
-      />
-      <TouchableOpacity onPress={() => setQuery(query)} style={tw`mb-4 p-3 bg-blue-500 rounded-lg`}>
-        <Text style={tw`text-white text-center`}>Search</Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={tw`flex-row items-center justify-between mb-4`}>
-            <Text style={tw`text-lg`}>{item.handle}</Text>
-            <TouchableOpacity
-              onPress={() => toggleFollow(item.id)}
-              style={tw`p-2 px-4 rounded-lg ${item.followed ? 'bg-red-500' : 'bg-green-500'}`}
-            >
-              <Text style={tw`text-white`}>{item.followed ? 'Unfollow' : 'Follow'}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-    </View>
+    <SafeAreaView style={tw`flex-1 bg-gray-100`}>
+      <View style={tw`flex-1 bg-gray-100 p-4`}>
+        <TextInput
+          placeholder="Search by handle name"
+          style={tw`border border-gray-300 w-full p-3 mb-4 rounded-lg`}
+          onChangeText={setQuery}
+          value={query}
+        />
+        <FlatList
+          data={results}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={tw`flex-row items-center justify-between mb-4`}>
+              <Text style={tw`text-lg`}>{item.handle}</Text>
+              <TouchableOpacity
+                onPress={() => toggleFollow(item.id)}
+                style={tw`p-2 px-4 rounded-lg ${item.followed ? 'bg-red-500' : 'bg-green-500'}`}
+              >
+                <Text style={tw`text-white`}>{item.followed ? 'Unfollow' : 'Follow'}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 

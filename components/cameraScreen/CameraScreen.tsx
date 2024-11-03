@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { Text, TouchableOpacity, View, Image, Alert, ActivityIndicator, Button, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, View, Image, Alert, ActivityIndicator, Button, StyleSheet, SafeAreaView } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { FIREBASE_STORAGE } from '../../FirebaseConfig';
@@ -78,40 +78,42 @@ const CameraScreen = () => {
   }
 
   return (
-    <View style={tw`flex-1 justify-center`}>
-      {photoUri ? (
-        <View style={tw`flex-1 items-center`}>
-          <Image source={{ uri: photoUri }} style={tw`w-full h-150`} resizeMode="contain" />
-          {isUploading ? (
-            <ActivityIndicator size="large" color="#00ff00" style={tw`m-4`} />
-          ) : (
+    <SafeAreaView style={tw`flex-1 bg-gray-100`}>
+      <View style={tw`flex-1 justify-center`}>
+        {photoUri ? (
+          <View style={tw`flex-1 items-center`}>
+            <Image source={{ uri: photoUri }} style={tw`w-full h-150`} resizeMode="contain" />
+            {isUploading ? (
+              <ActivityIndicator size="large" color="#00ff00" style={tw`m-4`} />
+            ) : (
+              <View style={tw`absolute bottom-2 left-0 right-0 m-4 flex-row justify-between h-12`}>
+                <TouchableOpacity onPress={resetCamera} style={tw`flex-1 items-center justify-center bg-blue-500 mx-2 rounded`}>
+                  <Text style={tw`text-white font-bold text-xl`}>Back to Camera</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={uploadPhoto} style={tw`flex-1 items-center justify-center bg-blue-500 mx-2 rounded`}>
+                  <Text style={tw`text-white font-bold text-xl`}>Upload</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        ) : (
+          <CameraView style={tw`flex-1`} facing={facing} ref={cameraRef}>
             <View style={tw`absolute bottom-2 left-0 right-0 m-4 flex-row justify-between h-12`}>
-              <TouchableOpacity onPress={resetCamera} style={tw`flex-1 items-center justify-center bg-blue-500 mx-2 rounded`}>
-                <Text style={tw`text-white font-bold text-xl`}>Back to Camera</Text>
+              <TouchableOpacity
+                style={tw`flex-1 items-center justify-center bg-blue-500 mx-2 rounded`}
+                onPress={toggleCameraFacing}>
+                <Text style={tw`text-xl font-bold text-white`}>Flip Camera</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={uploadPhoto} style={tw`flex-1 items-center justify-center bg-blue-500 mx-2 rounded`}>
-                <Text style={tw`text-white font-bold text-xl`}>Upload</Text>
+              <TouchableOpacity
+                style={tw`flex-1 items-center justify-center bg-green-500 mx-2 rounded`}
+                onPress={takePicture}>
+                <Text style={tw`text-xl font-bold text-white`}>Take Picture</Text>
               </TouchableOpacity>
             </View>
-          )}
-        </View>
-      ) : (
-        <CameraView style={tw`flex-1`} facing={facing} ref={cameraRef}>
-          <View style={tw`absolute bottom-2 left-0 right-0 m-4 flex-row justify-between h-12`}>
-            <TouchableOpacity
-              style={tw`flex-1 items-center justify-center bg-blue-500 mx-2 rounded`}
-              onPress={toggleCameraFacing}>
-              <Text style={tw`text-xl font-bold text-white`}>Flip Camera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={tw`flex-1 items-center justify-center bg-green-500 mx-2 rounded`}
-              onPress={takePicture}>
-              <Text style={tw`text-xl font-bold text-white`}>Take Picture</Text>
-            </TouchableOpacity>
-          </View>
-        </CameraView>
-      )}
-    </View>
+          </CameraView>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 
