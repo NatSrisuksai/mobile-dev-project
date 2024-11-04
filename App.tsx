@@ -10,7 +10,7 @@ import SearchPage from './components/searchpage/SearchPage';
 import CameraScreen from './components/cameraScreen/CameraScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ExitScreen from './components/exit/ExitScreen';
-
+import CommentScreen from './components/feedpage/CommentScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -32,12 +32,12 @@ const TabNavigator = () => {
         tabBarActiveTintColor: '#2E86C1',
         tabBarInactiveTintColor: '#BDC3C7',
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
-        tabBarStyle: { 
-          backgroundColor: '#FFFFFF', 
-          height: 80, 
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          height: 80,
         },
         headerShown: false,
-        tabBarHideOnKeyboard: true, 
+        tabBarHideOnKeyboard: true,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
@@ -55,6 +55,7 @@ const App = () => {
         <Stack.Screen name="Login" component={LoginPage} />
         <Stack.Screen name="Register" component={RegisterPage} />
         <Stack.Screen name="Main" component={TabNavigator} />
+        <Stack.Screen name="Comment" component={CommentScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

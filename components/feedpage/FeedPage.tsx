@@ -1,14 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, Image, FlatList, SafeAreaView, TouchableOpacity } from 'react-native';
 import { getDatabase, ref as databaseRef, onValue, off } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import tw from 'twrnc';
 
 type User = {
   id: string;
   handle: string;
   lastImage: string;
+  lastImageId: string;
 };
 
 const FeedPage = () => {
@@ -16,6 +17,7 @@ const FeedPage = () => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const db = getDatabase();
+  const navigation = useNavigation();
 
   useFocusEffect(
     useCallback(() => {
@@ -34,13 +36,17 @@ const FeedPage = () => {
             const followedUsersList: User[] = followedUserIds
               .map((userId) => {
                 const userData = allUsersData[userId];
-                return {
-                  id: userId,
-                  handle: userData.username,
-                  lastImage: userData.photos ? Object.values(userData.photos).pop().url : '',
-                };
+                const lastPhoto = userData.photos ? Object.entries(userData.photos).pop() : null;
+                return lastPhoto
+                  ? {
+                      id: userId,
+                      handle: userData.username,
+                      lastImage: lastPhoto[1].url,
+                      lastImageId: lastPhoto[0], // unique photo ID
+                    }
+                  : null;
               })
-              .filter((user) => user.lastImage);
+              .filter((user) => user?.lastImage) as User[];
 
             setFollowedUsersData(followedUsersList);
           });
@@ -55,10 +61,13 @@ const FeedPage = () => {
     }, [currentUser, db])
   );
 
+  const navigateToComments = (photoId: string, handle: string, photoUrl: string) => {
+    navigation.navigate('Comment', { photoId, handle, photoUrl });
+  };
 
   return (
     <SafeAreaView style={tw`flex-1 bg-gray-100`}>
-      <View style={tw`flex-1  p-4`}>
+      <View style={tw`flex-1 p-4`}>
         {followedUsersData.length > 0 ? (
           <FlatList
             data={followedUsersData}
@@ -66,7 +75,9 @@ const FeedPage = () => {
             renderItem={({ item }) => (
               <View style={tw`bg-white mb-4 p-4 rounded-lg shadow`}>
                 <Text style={tw`text-lg font-semibold`}>{item.handle}</Text>
-                <Image source={{ uri: item.lastImage }} style={tw`w-full h-120 rounded-lg`} />
+                <TouchableOpacity onPress={() => navigateToComments(item.lastImageId, item.handle, item.lastImage)}>
+                  <Image source={{ uri: item.lastImage }} style={tw`w-full h-120 rounded-lg`} />
+                </TouchableOpacity>
               </View>
             )}
           />
