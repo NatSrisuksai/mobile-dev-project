@@ -13,3 +13,11 @@
    ```bash
    npx expo start
    ```
+
+
+
+## Let's Try
+
+*** You need to have Expo Go first
+
+![App Screenshot](./assets/eas-qr.png)
