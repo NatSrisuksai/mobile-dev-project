@@ -61,7 +61,7 @@ const SearchPage = () => {
       // Show both followed and unfollowed users matching the search query
       setResults(
         allUsers
-          .filter((user) => user.handle.toLowerCase().includes(query.toLowerCase()))
+          .filter((user) => user.handle && user.handle.toLowerCase().includes(query.toLowerCase()))
           .map((user) => ({
             ...user,
             followed: !!followedUsers[user.id],
@@ -85,7 +85,6 @@ const SearchPage = () => {
         await set(followsRef, true);
       }
 
-      // Update local follow state
       setFollowedUsers((prev) => ({
         ...prev,
         [userId]: !isCurrentlyFollowing,

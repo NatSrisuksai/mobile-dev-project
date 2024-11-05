@@ -1,8 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, Image, FlatList, SafeAreaView, TouchableOpacity } from 'react-native';
-import { getDatabase, ref as databaseRef, onValue, off } from 'firebase/database';
+import { getDatabase, ref as databaseRef, onValue, off, set, runTransaction } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { TapGestureHandler } from 'react-native-gesture-handler';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import tw from 'twrnc';
 
 type User = {
@@ -14,6 +16,8 @@ type User = {
 
 const FeedPage = () => {
   const [followedUsersData, setFollowedUsersData] = useState<User[]>([]);
+  const [likesCountData, setLikesCountData] = useState<Record<string, number>>({});
+  const [likedPhotos, setLikedPhotos] = useState<Record<string, boolean>>({});
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const db = getDatabase();
@@ -37,18 +41,43 @@ const FeedPage = () => {
               .map((userId) => {
                 const userData = allUsersData[userId];
                 const lastPhoto = userData.photos ? Object.entries(userData.photos).pop() : null;
-                return lastPhoto
-                  ? {
-                      id: userId,
-                      handle: userData.username,
-                      lastImage: lastPhoto[1].url,
-                      lastImageId: lastPhoto[0], // unique photo ID
-                    }
-                  : null;
+                if (lastPhoto) {
+                  const [lastImageId, lastImageData] = lastPhoto;
+
+                  return {
+                    id: userId,
+                    handle: userData.username,
+                    lastImage: lastImageData.url,
+                    lastImageId,
+                  };
+                }
+                return null;
               })
-              .filter((user) => user?.lastImage) as User[];
+              .filter((user) => user) as User[];
 
             setFollowedUsersData(followedUsersList);
+
+            // Attach listeners for likeCount and likeBy for each followed user's last image
+            followedUsersList.forEach((user) => {
+              const likeCountRef = databaseRef(db, `photos/${user.lastImageId}/likeCount`);
+              onValue(likeCountRef, (likeSnapshot) => {
+                const updatedLikesCount = likeSnapshot.val() || 0;
+                setLikesCountData((prevData) => ({
+                  ...prevData,
+                  [user.lastImageId]: updatedLikesCount,
+                }));
+              });
+
+              // Check if the current user has liked this photo
+              const likeByRef = databaseRef(db, `photos/${user.lastImageId}/likeBy/${currentUser.uid}`);
+              onValue(likeByRef, (likeBySnapshot) => {
+                const isLiked = !!likeBySnapshot.val();
+                setLikedPhotos((prevData) => ({
+                  ...prevData,
+                  [user.lastImageId]: isLiked,
+                }));
+              });
+            });
           });
         } else {
           setFollowedUsersData([]);
@@ -58,11 +87,46 @@ const FeedPage = () => {
       onValue(followsRef, handleFollowsChange);
 
       return () => off(followsRef, 'value', handleFollowsChange);
-    }, [currentUser, db])
-  );
+    }, [currentUser, db]));
+
 
   const navigateToComments = (photoId: string, handle: string, photoUrl: string) => {
     navigation.navigate('Comment', { photoId, handle, photoUrl });
+  };
+
+  const handleDoubleTap = async (photoId: string, userId: string) => {
+    if (!currentUser) return;
+
+    const photoLikesRef = databaseRef(db, `photos/${photoId}/likeBy/${currentUser.uid}`);
+    const isLiked = likedPhotos[photoId];
+
+    // Toggle the like state in the local state
+    setLikedPhotos((prev) => ({
+      ...prev,
+      [photoId]: !isLiked,
+    }));
+
+    const likeCountRef = databaseRef(db, `photos/${photoId}/likeCount`);
+
+    try {
+      if (isLiked) {
+        // User is unliking the photo, so remove their UID and decrement like count
+        await set(photoLikesRef, null); // Remove user's UID from `likeBy`
+
+        await runTransaction(likeCountRef, (currentLikeCount) => {
+          return (currentLikeCount || 0) > 0 ? currentLikeCount - 1 : 0;
+        });
+      } else {
+        // User is liking the photo, so add their UID and increment like count
+        await set(photoLikesRef, true); // Add user's UID with `true` in `likeBy`
+
+        await runTransaction(likeCountRef, (currentLikeCount) => {
+          return (currentLikeCount || 0) + 1;
+        });
+      }
+    } catch (error) {
+      console.error("Error updating like count:", error);
+    }
   };
 
   return (
@@ -75,9 +139,23 @@ const FeedPage = () => {
             renderItem={({ item }) => (
               <View style={tw`bg-white mb-4 p-4 rounded-lg shadow`}>
                 <Text style={tw`text-lg font-semibold`}>{item.handle}</Text>
-                <TouchableOpacity onPress={() => navigateToComments(item.lastImageId, item.handle, item.lastImage)}>
+
+                <TapGestureHandler onActivated={() => handleDoubleTap(item.lastImageId, item.id)} numberOfTaps={2}>
                   <Image source={{ uri: item.lastImage }} style={tw`w-full h-120 rounded-lg`} />
-                </TouchableOpacity>
+                </TapGestureHandler>
+
+                <View style={tw`flex-row items-center mt-2`}>
+                  <Ionicons
+                    name={likedPhotos[item.lastImageId] ? 'heart-sharp' : 'heart-outline'}
+                    size={30}
+                    color={likedPhotos[item.lastImageId] ? 'red' : 'black'}
+                  />
+                  <Text style={tw`ml-2 text-gray-700 text-lg`}>{likesCountData[item.lastImageId] || 0}</Text>
+
+                  <TouchableOpacity onPress={() => navigateToComments(item.lastImageId, item.handle, item.lastImage)}>
+                    <Ionicons name="chatbubble-outline" size={24} color="black" style={tw`ml-4`} />
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           />
