@@ -3,6 +3,8 @@ import { SafeAreaView, View, Text, Image, FlatList } from 'react-native';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { onValue, ref as databaseRef, getDatabase } from 'firebase/database';
 import tw from 'twrnc';
+import { item } from '@type/type';
+
 
 const HomeScreen = () => {
   const [userImages, setUserImages] = useState<string[]>([]);
@@ -15,7 +17,7 @@ const HomeScreen = () => {
 
       const unsubscribe = onValue(imageRef, (snapshot) => {
         if (snapshot.exists()) {
-          const images = Object.values(snapshot.val()).map((item) => item.url);
+          const images = Object.values(snapshot.val() as Record<string, item>).map((item) => item.url);
           setUserImages(images);
         }
       });
@@ -45,4 +47,4 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default HomeScreen; 

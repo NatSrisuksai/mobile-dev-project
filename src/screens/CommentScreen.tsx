@@ -5,12 +5,7 @@ import { getAuth } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import tw from 'twrnc';
-
-interface Comment {
-  id: string;
-  username: string;
-  text: string;
-}
+import { Comment } from '@interface/interface';
 
 const CommentScreen = ({ route }: any) => {
   const { photoId } = route.params;
@@ -101,4 +96,4 @@ const CommentScreen = ({ route }: any) => {
   );
 };
 
-export default CommentScreen;
+export default CommentScreen; 

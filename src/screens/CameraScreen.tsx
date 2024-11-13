@@ -31,7 +31,11 @@ const CameraScreen = () => {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync();
-        setPhotoUri(photo.uri);
+        if (photo && photo.uri) {
+          setPhotoUri(photo.uri);
+        } else {
+          console.error("Photo is undefined or has no URI");
+        }
       } catch (error) {
         console.error("Error taking picture:", error);
       }
@@ -147,4 +151,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CameraScreen;
+export default CameraScreen; 
