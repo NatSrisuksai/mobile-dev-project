@@ -20,4 +20,4 @@
 
 *** You need to have Expo Go first
 
-![App Screenshot](./assets/eas-qr.png)
+![App Screenshot](./assets/eas-update.svg)
