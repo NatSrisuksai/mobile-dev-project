@@ -3,13 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, FlatList, Alert, SafeAreaView 
 import { getDatabase, ref as databaseRef, onValue, set } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
 import { useFocusEffect } from '@react-navigation/native';
+import { User } from '@interface/interface';
 import tw from 'twrnc';
 
-interface User {
-  id: string;
-  handle: string;
-  followed: boolean;
-}
 
 const SearchPage = () => {
   const [query, setQuery] = useState('');
@@ -22,7 +18,6 @@ const SearchPage = () => {
 
   useEffect(() => {
     if (currentUser) {
-      // Fetch list of all users
       const usersRef = databaseRef(db, 'users');
       onValue(usersRef, (snapshot) => {
         const usersData = snapshot.val() || {};
@@ -36,7 +31,7 @@ const SearchPage = () => {
         setAllUsers(usersList);
       });
 
-      // Fetch the current user's followed users
+
       const followsRef = databaseRef(db, `users/${currentUser.uid}/follows`);
       onValue(followsRef, (snapshot) => {
         const followsData = snapshot.val() || {};
@@ -130,4 +125,4 @@ const SearchPage = () => {
   );
 };
 
-export default SearchPage;
+export default SearchPage; 

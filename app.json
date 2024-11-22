@@ -33,6 +33,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/dde6f702-5cd5-4a96-9bbb-fdabbcf0bd8b"
+    },
+    "experiments": {
+      "newArchEnabled": true
     }
   }
 }

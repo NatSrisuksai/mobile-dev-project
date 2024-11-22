@@ -1,10 +1,10 @@
-// ExitScreen.tsx
 import React from 'react';
-import { View, Text, Button, Alert } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../../FirebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import tw from 'twrnc';
+import AppButton from '@common/Button';
 
 const ExitScreen = () => {
   const navigation = useNavigation();
@@ -23,7 +23,7 @@ const ExitScreen = () => {
             // Clear navigation stack and reset to login screen
             navigation.reset({
               index: 0,
-              routes: [{ name: 'Login' }],
+              routes: [{ name: 'Login' as never }],
             });
           } catch (error) {
             console.error("Error logging out: ", error);
@@ -36,9 +36,9 @@ const ExitScreen = () => {
   return (
     <View style={tw`flex-1 justify-center items-center`}>
       <Text style={tw`text-lg font-bold mb-4`}>Exit</Text>
-      <Button title="Logout" onPress={handleLogout} />
+      <AppButton title="Logout" onPress={handleLogout} />
     </View>
   );
 };
 
-export default ExitScreen;
+export default ExitScreen; 

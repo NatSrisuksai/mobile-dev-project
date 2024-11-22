@@ -2,16 +2,14 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, Image, FlatList, SafeAreaView, TouchableOpacity } from 'react-native';
 import { getDatabase, ref as databaseRef, onValue, off, set, runTransaction } from 'firebase/database';
 import { getAuth } from 'firebase/auth';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, NavigationProp } from '@react-navigation/native';
 import { TapGestureHandler } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import tw from 'twrnc';
+import { User, ImageData } from '@type/type';
 
-type User = {
-  id: string;
-  handle: string;
-  lastImage: string;
-  lastImageId: string;
+type RootStackParamList = {
+  Comment: { photoId: string; handle: string; photoUrl: string };
 };
 
 const FeedPage = () => {
@@ -21,7 +19,7 @@ const FeedPage = () => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
   const db = getDatabase();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   useFocusEffect(
     useCallback(() => {
@@ -42,7 +40,7 @@ const FeedPage = () => {
                 const userData = allUsersData[userId];
                 const lastPhoto = userData.photos ? Object.entries(userData.photos).pop() : null;
                 if (lastPhoto) {
-                  const [lastImageId, lastImageData] = lastPhoto;
+                  const [lastImageId, lastImageData] = lastPhoto as [string, ImageData]; // Cast to expected type
 
                   return {
                     id: userId,
@@ -87,8 +85,8 @@ const FeedPage = () => {
       onValue(followsRef, handleFollowsChange);
 
       return () => off(followsRef, 'value', handleFollowsChange);
-    }, [currentUser, db]));
-
+    }, [currentUser, db])
+  );
 
   const navigateToComments = (photoId: string, handle: string, photoUrl: string) => {
     navigation.navigate('Comment', { photoId, handle, photoUrl });
@@ -167,4 +165,4 @@ const FeedPage = () => {
   );
 };
 
-export default FeedPage;
+export default FeedPage; 
