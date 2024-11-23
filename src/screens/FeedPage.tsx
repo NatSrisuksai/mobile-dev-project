@@ -40,7 +40,7 @@ const FeedPage = () => {
                 const userData = allUsersData[userId];
                 const lastPhoto = userData.photos ? Object.entries(userData.photos).pop() : null;
                 if (lastPhoto) {
-                  const [lastImageId, lastImageData] = lastPhoto as [string, ImageData]; // Cast to expected type
+                  const [lastImageId, lastImageData] = lastPhoto as [string, ImageData]; 
 
                   return {
                     id: userId,

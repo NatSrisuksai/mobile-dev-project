@@ -20,7 +20,6 @@ const ExitScreen = () => {
         onPress: async () => {
           try {
             await signOut(FIREBASE_AUTH);
-            // Clear navigation stack and reset to login screen
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' as never }],
