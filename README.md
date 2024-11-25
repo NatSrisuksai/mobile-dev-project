@@ -8,6 +8,7 @@
 2. **Install dependencies:**
    ```bash
    npm install
+   
    ```
 3. **Create FirebaseConfig.ts in root directory**
    ```bash
